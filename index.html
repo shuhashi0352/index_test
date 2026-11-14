@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>エンジニアはプロジェクトの中でどう生きていくのか ― AIとコーディングと設計力</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F1F3F0;
+    --sheet: #FAFBF9;
+    --ink: #1E2A3A;
+    --muted: #5B6676;
+    --line: #CDD3D6;
+    --accent: #2B57BE;
+    --accent-soft: #E3EAF8;
+    --marker: #F2D65A;
+    --warn: #A4472F;
+    --warn-soft: #F5E6E0;
+    --ok: #2F6B4F;
+    --ok-soft: #E2EFE7;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #131921;
+      --sheet: #1A222C;
+      --ink: #E3E8EE;
+      --muted: #9AA6B4;
+      --line: #313C49;
+      --accent: #86A6FF;
+      --accent-soft: #1F2C47;
+      --marker: #6E5C17;
+      --warn: #E59A84;
+      --warn-soft: #3A2520;
+      --ok: #8CCBA9;
+      --ok-soft: #1C3328;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #131921;
+    --sheet: #1A222C;
+    --ink: #E3E8EE;
+    --muted: #9AA6B4;
+    --line: #313C49;
+    --accent: #86A6FF;
+    --accent-soft: #1F2C47;
+    --marker: #6E5C17;
+    --warn: #E59A84;
+    --warn-soft: #3A2520;
+    --ok: #8CCBA9;
+    --ok-soft: #1C3328;
+    color-scheme: dark;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.95;
+    letter-spacing: 0.02em;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mincho { font-family: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif; }
+  img, svg { max-width: 100%; }
+
+  .wrap { max-width: 44rem; margin: 0 auto; padding: 0 1.4rem; }
+
+  /* Hero */
+  header.hero { padding: 4.5rem 0 3rem; border-bottom: 1px solid var(--line); }
+  .hero .q {
+    font-family: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 6.2vw, 3.3rem);
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    margin: 0 0 1.4rem;
+  }
+  .hero .q span { display: block; }
+  .hero .q .strike {
+    font-weight: 500;
+    font-size: 0.5em;
+    color: var(--muted);
+    margin-top: 0.6rem;
+  }
+  .hero p.lead { margin: 0; color: var(--muted); max-width: 34em; }
+  .hero p.note { margin: 0.9rem 0 0; font-size: 0.9rem; color: var(--muted); }
+
+  /* Equation strip */
+  .equation {
+    margin: 2.4rem 0 0;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .equation .term {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.9rem 0.9rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .equation .term b { display: block; font-size: 1.02rem; margin-bottom: 0.2rem; }
+  .equation .term.goal { border-color: var(--accent); background: var(--accent-soft); }
+  .equation .op { align-self: center; color: var(--muted); font-size: 1.2rem; }
+  @media (max-width: 640px) {
+    .equation { grid-template-columns: 1fr; }
+    .equation .op { justify-self: center; transform: rotate(90deg); }
+  }
+
+  /* Sections */
+  section { padding: 3.6rem 0 1rem; }
+  .step {
+    display: flex; align-items: baseline; gap: 0.9rem;
+    margin: 0 0 1.2rem;
+  }
+  .step .n {
+    font-family: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    width: 2rem; height: 2rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+    line-height: 1;
+  }
+  h2 {
+    font-family: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-weight: 700;
+    font-size: clamp(1.45rem, 3.6vw, 1.85rem);
+    line-height: 1.45;
+    margin: 0;
+  }
+  h3 { font-size: 1.08rem; font-weight: 700; margin: 2rem 0 0.6rem; }
+  p { margin: 0 0 1.1rem; }
+
+  mark {
+    background: linear-gradient(transparent 58%, var(--marker) 58%);
+    color: inherit;
+    padding: 0 0.1em;
+  }
+
+  /* Claim block */
+  .claim {
+    margin: 1.8rem 0;
+    padding: 1.3rem 1.4rem 1.3rem 1.6rem;
+    border-left: 4px solid var(--accent);
+    background: var(--sheet);
+    font-family: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-weight: 700;
+    font-size: 1.18rem;
+    line-height: 1.75;
+  }
+  .claim small {
+    display: block;
+    font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-weight: 400;
+    font-size: 0.86rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+
+  /* Decision chips */
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin: 1.2rem 0 0.4rem;
+    padding: 1.2rem;
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+  }
+  .chips .chip {
+    font-size: 0.9rem;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.25rem 0.85rem;
+    line-height: 1.6;
+  }
+  .chips-caption { font-size: 0.88rem; color: var(--muted); margin: 0 0 1.4rem; }
+
+  /* Figure */
+  figure { margin: 1.8rem 0; }
+  figure .fig {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  figcaption { font-size: 0.86rem; color: var(--muted); margin-top: 0.5rem; }
+  svg text { font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif; }
+
+  /* Mapping table */
+  .tablewrap { overflow-x: auto; margin: 1.6rem 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 30rem; font-size: 0.95rem; line-height: 1.7; }
+  th, td { text-align: left; padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 700; color: var(--muted); font-size: 0.86rem; }
+  td:first-child { font-weight: 700; white-space: nowrap; }
+
+  /* Two outcomes */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 1.4rem 0; }
+  @media (max-width: 560px) { .pair { grid-template-columns: 1fr; } }
+  .box {
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    border: 1px solid var(--line);
+    background: var(--sheet);
+  }
+  .box b { display: block; font-size: 1rem; margin-bottom: 0.3rem; }
+  .box.warn { background: var(--warn-soft); border-color: transparent; }
+  .box.warn b { color: var(--warn); }
+  .box.ok { background: var(--ok-soft); border-color: transparent; }
+  .box.ok b { color: var(--ok); }
+
+  .verdict {
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    margin: 1.4rem 0;
+    padding: 1rem 1.2rem;
+    border-radius: 6px;
+    background: var(--ok-soft);
+    font-size: 0.98rem;
+  }
+  .verdict .tag {
+    flex: 0 0 auto;
+    font-weight: 700; color: var(--ok);
+    border: 1.5px solid var(--ok);
+    border-radius: 4px;
+    padding: 0 0.5rem;
+    font-size: 0.86rem;
+    line-height: 1.8;
+    margin-top: 0.15rem;
+  }
+
+  /* Approaches */
+  .approaches { display: grid; gap: 0.8rem; margin: 1.6rem 0; }
+  .approach {
+    display: grid; grid-template-columns: 9.5rem 1fr; gap: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--sheet);
+    padding: 1rem 1.1rem;
+  }
+  .approach.best { border: 2px solid var(--accent); }
+  .approach h4 { margin: 0; font-size: 1rem; line-height: 1.6; }
+  .approach p { margin: 0; font-size: 0.94rem; line-height: 1.75; }
+  .approach .con { color: var(--warn); font-size: 0.9rem; margin-top: 0.4rem; }
+  .approach .pro { color: var(--ok); font-size: 0.9rem; margin-top: 0.4rem; }
+  @media (max-width: 560px) { .approach { grid-template-columns: 1fr; gap: 0.4rem; } }
+
+  .examples {
+    margin: 1rem 0 1.4rem;
+    padding: 1rem 1.2rem;
+    background: var(--accent-soft);
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+  .examples p { margin: 0 0 0.4rem; font-weight: 700; }
+  .examples ul { margin: 0; padding-left: 1.2rem; }
+  .examples li { margin: 0.15rem 0; }
+
+  /* Conclusion */
+  section.conclusion {
+    margin-top: 2.4rem;
+    padding: 3.6rem 0 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .bigline {
+    font-family: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-weight: 900;
+    font-size: clamp(1.6rem, 4.6vw, 2.4rem);
+    line-height: 1.5;
+    margin: 0.4rem 0 1.6rem;
+  }
+  .design-items {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin: 1rem 0 1.6rem;
+  }
+  .design-items span {
+    font-size: 0.92rem;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 0.2rem 0.7rem;
+    line-height: 1.7;
+  }
+
+  .recap {
+    margin: 2.4rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  .recap h3 { margin-top: 0; }
+  .recap ol { margin: 0; padding-left: 1.4rem; }
+  .recap li { margin: 0.45rem 0; line-height: 1.8; }
+
+  .punch {
+    margin: 2.6rem 0 0.6rem;
+    font-family: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    line-height: 2;
+  }
+  .punch span { display: block; margin-top: 0.8rem; }
+
+  footer { padding: 2rem 0 3.5rem; color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 class="q">
+      <span>エンジニアは、</span>
+      <span>プロジェクトの中でどう生きていくのか。</span>
+      <span class="strike">そこに、コーディングはどう関わるのか。</span>
+    </h1>
+    <p class="lead">最近、「AIにコーディングを任せていいのか、それとも人がコーディングした方がいいのか」という論点がよく出る。これを深く掘るには、まず「コーディング」と、それに関わる要因をひとつずつ定義する必要がある。プロジェクト、意思決定、スクリプトという順に整理していくと、エンジニアがプロジェクトの中で本当に担うべきものが見えてくる。</p>
+    <p class="note">エンジニアではない人にも読んでもらえるよう、身近なたとえを使って書いています。</p>
+
+    <div class="equation" aria-label="議論の全体像">
+      <div class="term"><b>プロジェクト</b>意思決定の集合体</div>
+      <div class="op" aria-hidden="true">▶</div>
+      <div class="term"><b>コーディング</b>意思決定を相手の言語でスクリプト化する</div>
+      <div class="op" aria-hidden="true">▶</div>
+      <div class="term goal"><b>問われる力</b>意思決定を100%再現させる設計力</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 1 -->
+  <section>
+    <div class="step"><span class="n">1</span><h2>コーディングはプロジェクトのためのプロセス</h2></div>
+    <p>コーディングはなぜ発生するのか。その源をたどると、ほとんどの場合そこには何かしらの<strong>プロジェクト</strong>が絡んでいる。やりたいことがあって、それを実行するためのプロセスの中にコーディングが入っている。</p>
+    <p>学習のような例外を除けば、コーディングそのものが目的であり同時に手段でもある、ということはあまりない。</p>
+    <div class="claim">前提：コーディングは、プロジェクトのためのプロセスである。</div>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <div class="step"><span class="n">2</span><h2>プロジェクトとは「意思決定の集合体」</h2></div>
+    <p>コーディングはただのプロセスなので、プロジェクトによってはコーディングがまったく要らないこともある。たとえば<strong>「自分の家で誕生日パーティーを開く」</strong>のも、定義次第で立派なプロジェクトだ。</p>
+    <p>誕生日パーティーを成功させるには、決めなければならないことが次々に出てくる。</p>
+
+    <div class="chips" aria-label="誕生日パーティーで決めること">
+      <span class="chip">何時から何時まで？</span>
+      <span class="chip">誰を招待する？</span>
+      <span class="chip">ご飯は何を出す？</span>
+      <span class="chip">先に買っておくものは？</span>
+      <span class="chip">何のゲームをする？</span>
+      <span class="chip">当日のスケジュールは？</span>
+    </div>
+    <p class="chips-caption">ひとつひとつに対して、私たちは意思決定をしている。</p>
+
+    <p>「誕生日パーティー、はい終わり」とはいかない。何時に始まるのか、誰を呼ぶのかが決まっていなければ、誕生日パーティーは発生しない。つまり、そこでは必ず意思決定が起きている。</p>
+    <p>決め事を定義し、それについて意思決定する。これを対象を変えて何度も繰り返すことで、最終的に誕生日パーティーという一連のワークフローができあがる。</p>
+    <div class="claim">プロジェクトとは、意思決定の連続の集合体にすぎない。</div>
+
+    <h3>この話における「質の高いプロジェクト」</h3>
+    <p>プロジェクトが意思決定の集合体である以上、この話では、<mark>自分が下した意思決定の通りにことを運び、実行できるプロジェクト</mark>を質の高いプロジェクトとする。</p>
+    <p>もちろん、別のあり方もある。AIが自分以上に考えていろいろなことを実行してくれるなら、それは自分が思った以上のことをやってくれているとも言える。「自分が考えるよりAIが考えた方がいい」と全部を任せ、結果的にプロジェクトが大成功するなら、それもプロジェクトのあり方としてはいい。</p>
+    <p>ただし、そのやり方が必ず成功を生むという保証はない。自分でコントロールできない分、リスクを高めることにもつながる。そのリスクを取ってまで任せるかには考える余地があるが、この話では、自分が思った通りに実行するためにAIを使うこと、そのためにAIをどう動かすかを前提とする。</p>
+    <div class="claim">質の高いプロジェクトとは、自分の意思決定の通りに実行できるプロジェクトである。</div>
+  </section>
+
+  <!-- 3 -->
+  <section>
+    <div class="step"><span class="n">3</span><h2>コーディングとは「A君への英語の指示」</h2></div>
+    <p>では、誕生日パーティーにコーディングは要るのか。要らない。ではコーディングは何のためにあるのか。少し比喩的な状況を考えてみる。</p>
+    <p>自分が誕生日パーティーを計画する。ただしパーティーは日本ではなく<strong>アメリカ</strong>で行われ、自分は遠すぎて行けない。そこでアメリカにいる友達の<strong>A君</strong>に、代わりに実行してもらうことにする。</p>
+    <p>ところがA君は何も考えない。計画もしなければ提案もしない、英語で言われたことだけをやる人だ。だから実行はA君に任せるとしても、プロジェクトの意思決定の連続、つまりプラン立ては<mark>すべて自分がやらなければならない</mark>。</p>
+    <p>しかし自分は現地に行けず、A君に直接指示も出せない。そこで自分は、決めたことを事細かに<strong>日本語で</strong>スクリプトに書き、<strong>通訳者</strong>に渡す。通訳者は考えることができる人で、そのスクリプトを持ってアメリカへ行き、誕生日パーティーの場で<strong>英語で</strong>A君に指示を出す。</p>
+
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 760 240" role="img" aria-labelledby="fig1t" style="min-width:600px;width:100%;height:auto;display:block">
+          <title id="fig1t">自分が日本語のスクリプトを通訳者に渡し、通訳者が英語でA君に指示する流れ</title>
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+            </marker>
+            <marker id="ahm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+            </marker>
+          </defs>
+          <!-- me -->
+          <text x="85" y="28" text-anchor="middle" font-size="13" fill="var(--muted)">日本（行けない）</text>
+          <rect x="10" y="40" width="150" height="110" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+          <text x="85" y="80" text-anchor="middle" font-size="17" font-weight="700" fill="var(--ink)">自分</text>
+          <text x="85" y="106" text-anchor="middle" font-size="13" fill="var(--ink)">意思決定を</text>
+          <text x="85" y="125" text-anchor="middle" font-size="13" fill="var(--ink)">すべて行う</text>
+          <!-- interpreter -->
+          <text x="380" y="28" text-anchor="middle" font-size="13" fill="var(--muted)">アメリカへ行く</text>
+          <rect x="300" y="40" width="160" height="110" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="380" y="80" text-anchor="middle" font-size="17" font-weight="700" fill="var(--ink)">通訳者</text>
+          <text x="380" y="106" text-anchor="middle" font-size="13" fill="var(--ink)">考えられる</text>
+          <text x="380" y="125" text-anchor="middle" font-size="13" fill="var(--accent)" font-weight="700">＝AI</text>
+          <!-- A -->
+          <text x="675" y="28" text-anchor="middle" font-size="13" fill="var(--muted)">誕生日パーティーの場</text>
+          <rect x="600" y="40" width="150" height="110" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+          <text x="675" y="80" text-anchor="middle" font-size="17" font-weight="700" fill="var(--ink)">A君</text>
+          <text x="675" y="106" text-anchor="middle" font-size="13" fill="var(--ink)">考えない</text>
+          <text x="675" y="125" text-anchor="middle" font-size="13" fill="var(--ink)">＝プログラム</text>
+          <!-- arrows -->
+          <line x1="164" y1="82" x2="295" y2="82" stroke="var(--accent)" stroke-width="2" marker-end="url(#ah)"/>
+          <text x="230" y="70" text-anchor="middle" font-size="12" fill="var(--ink)">日本語の</text>
+          <text x="230" y="102" text-anchor="middle" font-size="12" fill="var(--ink)">スクリプト</text>
+          <line x1="464" y1="82" x2="595" y2="82" stroke="var(--accent)" stroke-width="2" marker-end="url(#ah)"/>
+          <text x="530" y="70" text-anchor="middle" font-size="12" fill="var(--ink)">英語で指示</text>
+          <text x="530" y="102" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent)">＝コーディング</text>
+          <!-- phone -->
+          <path d="M380,154 C380,210 85,210 85,158" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ahm)"/>
+          <text x="232" y="226" text-anchor="middle" font-size="12" fill="var(--muted)">想定外のことが起きたら電話（論点2）</text>
+        </svg>
+      </div>
+      <figcaption>自分は現地に行けないので、意思決定を日本語で書いて通訳者に渡す。通訳者がそれを英語の指示にしてA君を動かす。</figcaption>
+    </figure>
+
+    <p>コーディングを使うプロジェクトでも同じだ。Webを開発するとき、私たちがブラウザの中に入ってボタンを押したり、サーバーという建物に入ってAPIと連絡を取ったりはできない。実体のないものに対して、代わりに行動を起こしてくれるのが<strong>プログラム</strong>であり、それがA君にあたる。A君がわかる言語で指示を書くことがコーディングであり、その通訳者の役割を担おうとしているのが<strong>AI</strong>だ。AIに任せず自分でコーディングするのは、自分で英語を話して現地でA君に指示を出すことにあたる。</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>誕生日パーティーの例</th><th>ソフトウェア開発</th></tr></thead>
+        <tbody>
+          <tr><td>プロジェクト</td><td>誕生日パーティー</td><td>Webサービスなど</td></tr>
+          <tr><td>意思決定する人</td><td>自分</td><td>人間</td></tr>
+          <tr><td>意思決定の集合</td><td>日本語のスクリプト</td><td>人間がAIに伝える指示</td></tr>
+          <tr><td>指示を書き起こす人</td><td>通訳者（考えられる）</td><td>AI</td></tr>
+          <tr><td>実行への指示</td><td>英語での指示</td><td>コード（＝コーディング）</td></tr>
+          <tr><td>実行する人</td><td>A君（考えない）</td><td>プログラム（実体のない世界で動く）</td></tr>
+          <tr><td>AIに任せない場合</td><td>自分で英語を話して現地で指示する</td><td>人間が自分でコードを書く</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="claim">
+      コーディングとは、意思決定の集合を、実行者がわかる言語でスクリプト化したものである。
+      <small>プロジェクト＝意思決定の集合体。それを実行者（A君＝プログラム）の言語で書き起こすのがコーディング。その書き起こしを担うのが通訳者＝AI。</small>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section>
+    <div class="step"><span class="n">4</span><h2>コーディングはプロジェクトの質を上げない</h2></div>
+    <p>この定義で考えると、<mark>コーディングそのものによってプロジェクトの質が上がることはない</mark>。</p>
+    <p>質の高いプロジェクトが自分の思った通りに実行できるプロジェクトである以上、誕生日パーティーの例で言う、自分の意思決定を英語の指示に置き換えてA君に渡すプロセスは、プロジェクトの質を上げることにはならない。本当は自分で実行した方がいいのに、実行できないから仕方なく書いているだけだからだ。A君は何も考えないので、言われた通りにやるだけなら、結果は次のどちらかしかない。</p>
+
+    <div class="pair">
+      <div class="box"><b>質はそのまま</b>意思決定がすべて正しく伝わり、その通りに実行された場合。</div>
+      <div class="box warn"><b>書き漏れで質が下がる</b>スクリプトや指示に書ききれなかった部分がある場合。</div>
+    </div>
+
+    <p>つまりコーディングは、プロジェクトから見れば<strong>二次情報</strong>にすぎない。だとすれば、コーディングで重要視すべきことは明らかだ。</p>
+    <div class="claim">自分たちが決めた意思決定の質を、汚さず保ったまま反映できるかどうか。</div>
+    <p>ここで最近の論点に戻る。AIにコーディングを任せるか、人が自分でコーディングするか。AIに任せるとは、通訳者に任せるということだ。つまり<strong>AIが通訳者としてちゃんと機能してくれるか</strong>を考える。論点は2つある。</p>
+  </section>
+
+  <!-- 5 -->
+  <section>
+    <div class="step"><span class="n">5</span><h2>論点1　AIは書いた通りにやってくれるか</h2></div>
+    <p>通訳者にスクリプトを渡したのに、書いたことすらA君に伝えられないのでは質が落ちる。そうなれば「自分でアメリカに行って、自分で英語を話して誕生日パーティーを実行した方がまだマシだった」となる。ここが1つ目の論点の中心だ。</p>
+    <p>ただし、うまく実行されなかったときは<strong>原因の切り分け</strong>が必要になる。</p>
+
+    <div class="pair">
+      <div class="box warn"><b>通訳者（AI）の責任</b>「こう書いたじゃん。なんでその通りにできなかったの？」<br>スクリプト通りにやってくれなかった。</div>
+      <div class="box"><b>人間の責任</b>「ごめん、スクリプトにちゃんと書いてなかった」<br>そもそも通訳者への指示がうまくできていなかった。</div>
+    </div>
+
+    <p>後者は人間の責任なので、この論点とは関係ない。問われるのは前者だけだ。</p>
+    <div class="verdict">
+      <span class="tag">結論</span>
+      <span>現状のAIの精度なら、前者については文句がない。言ったことはやってくれるし、やってくれないなら「伝え方が悪かった」と人間側に責任を求められるくらいの精度がある。<strong>1つ目の論点は大した問題ではない。</strong></span>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section>
+    <div class="step"><span class="n">6</span><h2>論点2　突発的なイベントにAIはどう反応するか</h2></div>
+    <p>誕生日パーティーでは、思った通りのことが全部起きるとは限らない。呼んだ人による要因もあれば、その場その場で何が起きるかもわからない。要因が多すぎて、スクリプト通りに実行できることなどありえない。<mark>突発的なイベントは、プロジェクトでは絶対に起きる。</mark></p>
+    <p>スクリプトにないことが起きると、何も考えないA君は動けなくなる。そのとき通訳者が自分の頭を使い、スクリプトにないことを自分の判断でA君に指示してしまうかもしれない。結果として質が上がることもあれば、下がることもある。</p>
+    <p>AIでも同じことが起こりうる。AIは言った通りのことをやるが、考えることもできる。だから突発的なイベントに対して勝手に判断し、プロジェクトの意思決定をひとつ勝手に足してしまうかもしれない。これは精度の問題ではなく、<strong>AIがやってしまうこと</strong>の問題だ。</p>
+    <p>質が上がる可能性もある以上、それ自体が悪いとは言い切れない。本当の問題は、<mark>意思決定の集合を渡した人間が、それをコントロールできないこと</mark>にある。では、どうすればコントロールできるのか。</p>
+
+    <div class="approaches">
+      <div class="approach">
+        <h4>毎回電話してもらう</h4>
+        <div>
+          <p>通訳者に「想定外のことが起きてA君が止まったら、その都度必ず電話して。そのたびに意思決定を追加するから」と伝える。</p>
+          <p class="pro">人間が完全にコントロールできる。</p>
+          <p class="con">突発的なイベントは山ほどある。毎回対応するなら、自分でアメリカに行って自分で英語を話した方がよかったとなる。AIが何千回も「どうしますか」と聞いてくるなら、自分でコードを書いた方がいい。現実的ではない。</p>
+        </div>
+      </div>
+      <div class="approach">
+        <h4>ルールだけを細かく決める</h4>
+        <div>
+          <p>「こういうときはこう、こういうときはこう」と、ルールベースで書いておく。</p>
+          <p class="con">漏れたときには結局電話がかかってくる。そして漏れは、誕生日パーティーの例で言えばいくらでも起こりうる。</p>
+        </div>
+      </div>
+      <div class="approach best">
+        <h4>思想や抽象的なルールも伝える</h4>
+        <div>
+          <p>意思決定の連続だけでなく、抽象的なルールや「このプロジェクトのあり方をどう考えているか」という思想、どういうやり方でやってほしいかまでスクリプトに書いておく。通訳者は「ルール1と2の思想を合わせれば、このイベントではA君にこう指示すればよさそうだ」と自分で判断できる。それでもわからないときだけ電話してもらう。</p>
+          <p class="pro">電話の回数が減り、ルールの背景にある思想まで伝わるので、ある程度対応してくれそうだ。</p>
+        </div>
+      </div>
+    </div>
+
+    <p>コーディングでも同じだ。プロジェクトの思想と、それに基づく方針を伝え、AIがそれに基づいて判断してくれれば嬉しい。</p>
+    <div class="examples">
+      <p>AIに伝える抽象度の高いベースの例</p>
+      <ul>
+        <li>思想：スピード重視なのか、精度重視なのか、コスト削減重視なのか</li>
+        <li>データベースをこういうふうに持ってほしい</li>
+        <li>環境変数はここで作ってほしい</li>
+        <li>環境をこういうふうに分けて、住み分けてほしい</li>
+      </ul>
+    </div>
+
+    <h3>ただし、単純に伝えるだけでうまくいくほど甘くはない</h3>
+    <p>思想はあくまでベースにすぎず、実際に実行するアクションそのものを定めるものではない。かといって「こういうときはこう」というルールだけにすれば、漏れたときに電話がかかってくる。思想やルール、データベースの持ち方などを単純に伝えれば思い通りに実行される、というほど甘くはない。</p>
+    <p>では、それをどうするのか。プロジェクトは自分の意思決定の積み上げであり、うまくいくかどうかはそれを積み上げた自分にかかっている。AIに判断させることがあってもいいが、それも自分で選んだ意思決定であるべきだ。気づかないうちにAIが意思決定していれば、そのプロジェクトはもう自分の意思決定の集合ではなく、自分が理解できていない部分を抱えることになる。<mark>意思決定の集合＝プロジェクトという形を保ちながら、AIをどううまく使うか</mark>。今は難しくても、それを模索することこそが、今のエンジニアに与えられた解くべき課題だ。</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="conclusion">
+    <div class="step"><span class="n">7</span><h2>結論　エンジニアに問われているのは設計力</h2></div>
+
+    <p class="bigline">コーディングを自分でするかどうかではなく、自分の意思決定を100%プロジェクトに反映させられるか。</p>
+
+    <h3>コーディングを自分でするかどうかは本質ではない</h3>
+    <p>通訳者から何度も電話がかかってきて、「それなら自分でアメリカに行って、自分で英語を話して誕生日パーティーをやった方がよかった」と思い、実際にそうする。これはまったく悪いことではない。</p>
+    <p>コーディングはプロジェクトの中のプロセスであり、プロジェクトは自分の意思決定の集合体だ。だから、<mark>コーディングを自分でやるかどうかも、自分の意思決定のひとつ</mark>にすぎない。自分でやってもいいし、任せてもいい。</p>
+    <p>問題は、自分の意思決定が100%プロジェクトに反映されるかどうか。気づかないところで、自分と関係のない意思決定がなされていないかどうかだ。そしてこれは、自分でコーディングしても起こりうる。自分で書いたからといって100%できるわけではなく、見逃すところもあれば、プログラムが自分の意図しない設計になっていることもある。</p>
+
+    <h3>スピードの違いはあるが、問われている力とは別の話</h3>
+    <p>もちろん、自分で書くかAIに任せるかでスピードには差が出る。コーディングは自然言語でAIに伝えるように思ったことをパッと形にできるものではなく、文字をタイプする分だけ物理的に時間がかかる。ただ、スピードにこだわるかどうかは人やプロジェクト次第で、速さそのものはAIの性能の話でもある。エンジニアに特有に問われている力ではない。どちらを選んでも、意思決定を続けられることに変わりはない。</p>
+
+    <h3>AIに任せるなら、実行の根拠を手放さない</h3>
+
+    <p>通訳者に何かを伝えれば、通訳者はそれに基づいて考え、A君に指示を出す。AIも同じで、何かを伝えればそれに基づいてコードを書き、プログラムを動かす。大事なのは、その<strong>実行の根拠がAIの意思決定へと移ってしまわないように</strong>、人間がどうコントロールするかだ。</p>
+
+    <p>もちろん、AIに投げていいこともある。AIは考えられるのだから、考えさせていい部分は考えさせていい。ただし、<mark>「考えさせる」ということ自体もひとつの意思決定</mark>だ。大事なのは、考えさせることを自分で選んだのか、それとも気づかないうちにAIが考えていて、そのことにさえ気づけなかったのかという違いだ。</p>
+    <div class="pair">
+      <div class="box ok"><b>自分で選んで考えさせた</b>考えさせると決めたのは自分。AIの判断も、自分の意思決定の範囲に入っている。</div>
+      <div class="box warn"><b>気づかないうちに考えていた</b>AIが勝手に意思決定を足していて、自分はそれに気づいていない。</div>
+    </div>
+    <p>両者は同じ結果を生むかもしれない。しかし、この話の前提である「自分がコントロールできているか」という観点では、まったく違う。自分で選んだのであれば、考えさせた時点でその責任は人間にあるという自覚を持てる。それだけでなく、AIが下した意思決定を自分で確かめ、そのまま進めていいかどうかを、改めて自分で意思決定できる。</p>
+    <p>一方、気づかないうちに考えさせていた場合、AIによる意思決定はそのまま放置される。そして知らない間に、<mark>自分のプロジェクトに対するコントロールを少しずつ奪われていく</mark>。</p>
+    <p>これは有識者に任せるのと同じことだ。有識者に任せると判断したのは自分であり、その有識者の判断で失敗したとき、責任を負うのは自分自身だ。その自覚を持ったうえで有識者に委ねたのなら、委ねたこと自体が自分の意思決定になる。AIに考えさせるのも同じで、だからそこでも、人間による100%のコントロールを前提にしたい。</p>
+
+    <p>その100%に近づけるには、自分が決めた意思決定の連続をAIが実行の中で再現できるような、プロジェクト全体の設計が要る。特にAIが関わる場面でそれが必要になる。</p>
+
+    <div class="claim">
+      自分の意思決定の連続が、質を落とさずにプロジェクトとして形づくられるように、AIをどう動かすかを設計できるか。この設計力こそが、この時代ならではのエンジニアの技術力として問われている。
+    </div>
+
+    <p>その設計に含まれるもの：</p>
+    <div class="design-items">
+      <span>Hooks</span>
+      <span>Rules</span>
+      <span>データの持ち方</span>
+      <span>思想・方針の伝え方</span>
+    </div>
+    <p>こうしたものを正確に伝え、自分の決めた意思決定の100%をちゃんと渡せるかどうか。</p>
+
+
+    <h3>いいプロジェクトとは</h3>
+    <p>それがきちんとできれば、誕生日パーティーはうまくいく。うまくいかなかったとしても、それは意思決定をした自分の責任だと切り分け、その意思決定を改善したり、新しい意思決定を生み出したりできる。それがいいプロジェクトだと思う。</p>
+    <p>AIに判断を任せること自体は悪くない。問題は、自分の意思でそうさせたかどうかだ。知らない間にAIが判断していてうまくいかなかった場合、<mark>何がまずかったのか、その原因にさえ気づけない</mark>。どの意思決定を改善すればいいのかもわからないまま、プロジェクトが自分の手を離れていく。</p>
+    <p class="punch">パーティーの終わりに、みんなが言ってくれた。「誕生日会、楽しかったです。ありがとうございました」<span>通訳者の目を見ながら。</span></p>
+
+    <div class="recap">
+      <h3>まとめ</h3>
+      <ol>
+        <li>プロジェクトは意思決定の集合体であり、コーディングはそれを実行者（プログラム）の言語でスクリプト化したもの。AIはその書き起こしを担う通訳者にあたる。</li>
+        <li>コーディングはプロジェクトの質を上げない。重要なのは、意思決定の質を落とさず反映できるか。</li>
+        <li>論点1「AIは書いた通りにやるか」は、現状の精度なら問題ない。失敗は指示を出した人間の責任として切り分けられる。</li>
+        <li>論点2「突発的なイベントへの反応」では、AIが勝手に意思決定を足してしまい、人間がコントロールできなくなる。毎回確認させるのは非現実的で、思想やルールを伝えても完全には制御できない。</li>
+        <li>コーディングを自分でするかどうかは本質ではなく、それ自体も意思決定のひとつ。自分で書いても意図しない設計は起こりうる。スピードには差があるが、エンジニアに問われる力とは別の話。</li>
+        <li>AIに任せるなら、自分の意思決定を100%、再現性をもってAIに実行させるための設計力（Hooks、Rules、データの持ち方など）が問われる。</li>
+        <li>エンジニアがプロジェクトの中で担うべきことの核心は、自分で書くにせよ任せるにせよ、自分の意思決定を100%プロジェクトに反映させること。</li>
+      </ol>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">話した内容をもとに構成したまとめ</div>
+</footer>
+
+</body>
+</html>
